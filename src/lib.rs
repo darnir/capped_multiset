@@ -28,6 +28,7 @@
 /// returned will be no greater than the "cap" on the multiset. This `cap` can be changed at
 /// runtime and does not affect the actual data stored in the Multiset. As a result, setting
 /// `cap = 1` or any other low value is not a lossy operation.
+#[derive(Hash, Debug, Eq, PartialEq)]
 pub struct CappedMultiset {
     elements: Vec<u8>,
     cap: u8,
