@@ -1,5 +1,5 @@
 [package]
-name = "mmultiset"
+name = "capped_multiset"
 version = "0.1.0"
 authors = ["Darshit Shah <darnir@gmail.com>"]
 
