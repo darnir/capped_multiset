@@ -30,22 +30,22 @@
 /// `cap = 1` or any other low value is not a lossy operation.
 #[derive(Hash, Debug, Eq, PartialEq)]
 pub struct CappedMultiset {
-    elements: Vec<u8>,
-    cap: u8,
+    elements: Vec<u32>,
+    cap: u32,
 }
 
 impl CappedMultiset {
-    /// Consumes a `Vec<u8>` and returns a `CappedMultiset` with the same values.
+    /// Consumes a `Vec<u32>` and returns a `CappedMultiset` with the same values.
     /// By default, no cap is set on the elements of the multiset
-    pub fn new(item: Vec<u8>) -> CappedMultiset {
+    pub fn new(item: Vec<u32>) -> CappedMultiset {
         CappedMultiset {
             elements: item,
-            cap: u8::max_value()
+            cap: u32::max_value()
         }
     }
 
     /// Compute the sum of all elements of the multiset, honoring the value of the cap.
-    pub fn sum(&self) -> u8 {
+    pub fn sum(&self) -> u32 {
         let mut sum = 0;
         for elem in self.elements.iter().map(|&x| std::cmp::min(x, self.cap)) {
             sum += elem;
@@ -54,8 +54,8 @@ impl CappedMultiset {
     }
 
     /// Set a cap on the values of the multiset
-    pub fn set_cap(&mut self, cap: Option<u8>) {
-        self.cap = cap.unwrap_or(u8::max_value());
+    pub fn set_cap(&mut self, cap: Option<u32>) {
+        self.cap = cap.unwrap_or(u32::max_value());
     }
 }
 
@@ -64,7 +64,7 @@ mod tests {
     use CappedMultiset;
     #[test]
     fn test_sum() {
-        let simple_array: Vec<u8> = vec![1,2,3,4,5];
+        let simple_array: Vec<u32> = vec![1,2,3,4,5];
         let mut testset = CappedMultiset::new(simple_array);
         assert_eq!(testset.sum(), 15);
         testset.set_cap(Some(3));
