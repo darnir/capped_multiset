@@ -14,20 +14,41 @@
 // #![warn(single_match_else)]
 // #![warn(wrong_pub_self_convention)]
 
-/// A multiset is a datastructure which resembles a classic Set, except it allows duplicate
-/// elements for each key. For more information on Multisets, see:
-///
-/// * [Wikipedia Entry](https://en.wikipedia.org/wiki/Multiset)
-/// * [C++ Multisets](http://en.cppreference.com/w/cpp/container/multiset)
-/// * [C++ Multiset Tutorial](http://www.java2s.com/Tutorial/Cpp/0380__set-multiset/Catalog0380__set-multiset.htm)
-/// * _Knuth, Donald. The Art of Computer Programming Volume II, Section 4.6.3, Exercise 19_
-///
-/// This struct implements a `CappedMultiset`. A `CappedMultiset` is a datastructure similar to a
-/// multiset, except it can have a dynamically defined "cap" on the value of each key. When such a
-/// cap is defined, any operation to retrieve the value of an element of the set, the value
-/// returned will be no greater than the "cap" on the multiset. This `cap` can be changed at
-/// runtime and does not affect the actual data stored in the Multiset. As a result, setting
-/// `cap = 1` or any other low value is not a lossy operation.
+//! A multiset is a datastructure which resembles a classic Set, except it allows duplicate
+//! elements for each key. For more information on Multisets, see:
+//!
+//! * [Wikipedia Entry](https://en.wikipedia.org/wiki/Multiset)
+//! * [C++ Multisets](http://en.cppreference.com/w/cpp/container/multiset)
+//! * [C++ Multiset Tutorial](http://www.java2s.com/Tutorial/Cpp/0380__set-multiset/Catalog0380__set-multiset.htm)
+//! * _Knuth, Donald. The Art of Computer Programming Volume II, Section 4.6.3, Exercise 19_
+//!
+//! This crate implements a `CappedMultiset`. A `CappedMultiset` is a datastructure similar to a
+//! multiset, except it can have a dynamically defined "cap" on the value of each key. When such a
+//! cap is defined, any operation to retrieve the value of an element of the set, the value
+//! returned will be no greater than the "cap" on the multiset. This `cap` can be changed at
+//! runtime and does not affect the actual data stored in the Multiset. As a result, setting
+//! `cap = 1` or any other low value is not a lossy operation.
+//!
+//! ```rust
+//! extern crate capped_multiset;
+//!
+//! use capped_multiset::CappedMultiset;
+//!
+//! fn main() {
+//!     let set = vec![1, 2, 3, 4, 5];
+//!     let mut capped_set = CappedMultiset::new(set);
+//!     assert_eq!(capped_set.sum(), 15);
+//!     capped_set.set_cap(Some(1));
+//!     assert_eq!(capped_set.sum(), 5);
+//!     capped_set.set_cap(Some(2));
+//!     assert_eq!(capped_set.sum(), 9);
+//! }
+//! ```
+
+/// A `CappedMultiset` structure is a data structure similar to a multiset with the key distinction
+/// that it supports setting a _cap_ on the values of each element. Once a cap is set, all
+/// operations on the data structure that access an element will return at most the value of the
+/// cap.
 #[derive(Hash, Debug, Eq, PartialEq)]
 pub struct CappedMultiset {
     elements: Vec<u32>,

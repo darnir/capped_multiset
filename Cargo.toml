@@ -2,5 +2,15 @@
 name = "capped_multiset"
 version = "0.1.0"
 authors = ["Darshit Shah <darnir@gmail.com>"]
+description = "A Multiset that can return a capped value on the elements"
+repository = "https://github.com/darnir/capped_multiset"
+homepage = "https://github.com/darnir/capped_multiset"
+keywords = ["multiset", "sets"]
+documentation = "https://docs.rs/capped_multiset"
+readme = "README.md"
+license = "MIT"
+
+[badges]
+travis-ci = { repository = "capped_multiset" }
 
 [dependencies]
