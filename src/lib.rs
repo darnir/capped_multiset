@@ -45,6 +45,8 @@
 //! }
 //! ```
 
+use std::ops::{BitOrAssign, BitOr, BitAnd, BitAndAssign};
+
 /// A `CappedMultiset` structure is a data structure similar to a multiset with the key distinction
 /// that it supports setting a _cap_ on the values of each element. Once a cap is set, all
 /// operations on the data structure that access an element will return at most the value of the
@@ -79,6 +81,47 @@ impl CappedMultiset {
         self.cap = cap.unwrap_or(u32::max_value());
     }
 }
+
+impl BitAndAssign for CappedMultiset {
+    /// In-place intersection of the `CappedMultiset` and `_rhs`
+    fn bitand_assign(&mut self, _rhs: CappedMultiset) {
+        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
+            *e1 = std::cmp::min(*e1, *e2);
+        }
+    }
+}
+
+impl BitAnd for CappedMultiset {
+    type Output = Self;
+
+    /// Returns the intersection of self and rhs as a new CappedMultiset.
+    fn bitand(self, rhs: Self) -> Self {
+        let mut result = CappedMultiset::new(self.elements);
+        result &= rhs;
+        result
+    }
+}
+
+impl BitOrAssign for CappedMultiset {
+    /// In-place union of the `CappedMultiset` and `_rhs`
+    fn bitor_assign(&mut self, _rhs: CappedMultiset) {
+        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
+            *e1 = std::cmp::max(*e1, *e2);
+        }
+    }
+}
+
+impl BitOr for CappedMultiset {
+    type Output = Self;
+
+    /// Returns the union of self and rhs as a new CappedMultiset.
+    fn bitor(self, rhs: Self) -> Self {
+        let mut result = CappedMultiset::new(self.elements);
+        result |= rhs;
+        result
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
