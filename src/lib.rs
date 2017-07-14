@@ -51,7 +51,7 @@ use std::ops::{BitOrAssign, BitOr, BitAnd, BitAndAssign};
 /// that it supports setting a _cap_ on the values of each element. Once a cap is set, all
 /// operations on the data structure that access an element will return at most the value of the
 /// cap.
-#[derive(Hash, Debug, Eq, PartialEq)]
+#[derive(Hash, Debug, Eq, PartialEq, Clone)]
 pub struct CappedMultiset {
     elements: Vec<u32>,
     cap: u32,
@@ -91,6 +91,14 @@ impl BitAndAssign for CappedMultiset {
     }
 }
 
+impl<'a> BitAndAssign<&'a CappedMultiset> for CappedMultiset {
+    fn bitand_assign(&mut self, _rhs: &'a CappedMultiset) {
+        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
+            *e1 = std::cmp::min(*e1, *e2);
+        }
+    }
+}
+
 impl BitAnd for CappedMultiset {
     type Output = Self;
 
@@ -105,6 +113,14 @@ impl BitAnd for CappedMultiset {
 impl BitOrAssign for CappedMultiset {
     /// In-place union of the `CappedMultiset` and `_rhs`
     fn bitor_assign(&mut self, _rhs: CappedMultiset) {
+        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
+            *e1 = std::cmp::max(*e1, *e2);
+        }
+    }
+}
+
+impl<'a> BitOrAssign<&'a CappedMultiset> for CappedMultiset {
+    fn bitor_assign(&mut self, _rhs: &'a CappedMultiset) {
         for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
             *e1 = std::cmp::max(*e1, *e2);
         }
@@ -139,5 +155,17 @@ mod tests {
         assert_eq!(testset.sum(), 5);
         testset.set_cap(Some(0));
         assert_eq!(testset.sum(), 0);
+    }
+
+    #[test]
+    fn test_operations() {
+        let set1_vec: Vec<u32> = vec![2,4,6,8,10];
+        let set2_vec: Vec<u32> = vec![2,3,4,10,12];
+        let testset1 = CappedMultiset::new(set1_vec);
+        let testset2 = CappedMultiset::new(set2_vec);
+        let testset3 = testset1.clone() | testset2.clone();
+        let testset4 = testset1.clone() & testset2.clone();
+        assert_eq!(testset3.sum(), 34);
+        assert_eq!(testset4.sum(), 27);
     }
 }
