@@ -1,3 +1,4 @@
+// Clippy Lints
 // #![warn(cast_possible_truncation)]
 // #![warn(cast_possible_wrap)]
 // #![warn(cast_sign_loss)]
@@ -13,6 +14,14 @@
 // #![warn(shadow_unrelated)]
 // #![warn(single_match_else)]
 // #![warn(wrong_pub_self_convention)]
+
+#![warn(missing_docs,
+        missing_debug_implementations,
+        missing_copy_implementations,
+        trivial_casts, trivial_numeric_casts,
+        unsafe_code,
+        unstable_features,
+        unused_import_braces, unused_qualifications)]
 
 //! A multiset is a datastructure which resembles a classic Set, except it allows duplicate
 //! elements for each key. For more information on Multisets, see:
@@ -84,6 +93,8 @@ impl CappedMultiset {
 
 impl BitAndAssign for CappedMultiset {
     /// In-place intersection of the `CappedMultiset` and `_rhs`
+    ///
+    /// Compares LHS and RHS element-wise and stores the minimum for each element in LHS
     fn bitand_assign(&mut self, _rhs: CappedMultiset) {
         for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
             *e1 = std::cmp::min(*e1, *e2);
@@ -92,6 +103,7 @@ impl BitAndAssign for CappedMultiset {
 }
 
 impl<'a> BitAndAssign<&'a CappedMultiset> for CappedMultiset {
+    /// In-place intersection of the `CappedMultiset` and a reference to `_rhs`
     fn bitand_assign(&mut self, _rhs: &'a CappedMultiset) {
         for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
             *e1 = std::cmp::min(*e1, *e2);
@@ -103,12 +115,11 @@ impl BitAnd for CappedMultiset {
     type Output = Self;
 
     /// Returns the intersection of self and rhs as a new CappedMultiset.
-    fn bitand(self, rhs: Self) -> Self {
-        let mut result = CappedMultiset::new(self.elements);
-        result &= rhs;
-        result
-    }
-}
+    ///
+    /// Compares LHS and RHS element-wise and returns a new `CappedMultiset` containing the minimum
+    /// for each element
+    fn bitand(self, rhs: Self) -> Self { let mut result = CappedMultiset::new(self.elements);
+        result &= rhs; result } }
 
 impl BitOrAssign for CappedMultiset {
     /// In-place union of the `CappedMultiset` and `_rhs`
