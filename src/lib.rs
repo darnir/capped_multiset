@@ -72,7 +72,7 @@ impl CappedMultiset {
     pub fn new(item: Vec<u32>) -> CappedMultiset {
         CappedMultiset {
             elements: item,
-            cap: u32::max_value()
+            cap: u32::max_value(),
         }
     }
 
@@ -118,8 +118,12 @@ impl BitAnd for CappedMultiset {
     ///
     /// Compares LHS and RHS element-wise and returns a new `CappedMultiset` containing the minimum
     /// for each element
-    fn bitand(self, rhs: Self) -> Self { let mut result = CappedMultiset::new(self.elements);
-        result &= rhs; result } }
+    fn bitand(self, rhs: Self) -> Self {
+        let mut result = CappedMultiset::new(self.elements);
+        result &= rhs;
+        result
+    }
+}
 
 impl BitOrAssign for CappedMultiset {
     /// In-place union of the `CappedMultiset` and `_rhs`
@@ -155,7 +159,7 @@ mod tests {
     use CappedMultiset;
     #[test]
     fn test_sum() {
-        let simple_array: Vec<u32> = vec![1,2,3,4,5];
+        let simple_array: Vec<u32> = vec![1, 2, 3, 4, 5];
         let mut testset = CappedMultiset::new(simple_array);
         assert_eq!(testset.sum(), 15);
         testset.set_cap(Some(3));
@@ -170,8 +174,8 @@ mod tests {
 
     #[test]
     fn test_operations() {
-        let set1_vec: Vec<u32> = vec![2,4,6,8,10];
-        let set2_vec: Vec<u32> = vec![2,3,4,10,12];
+        let set1_vec: Vec<u32> = vec![2, 4, 6, 8, 10];
+        let set2_vec: Vec<u32> = vec![2, 3, 4, 10, 12];
         let testset1 = CappedMultiset::new(set1_vec);
         let testset2 = CappedMultiset::new(set2_vec);
         let testset3 = testset1.clone() | testset2.clone();
