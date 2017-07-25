@@ -1,28 +1,3 @@
-// Clippy Lints
-// #![warn(cast_possible_truncation)]
-// #![warn(cast_possible_wrap)]
-// #![warn(cast_sign_loss)]
-// #![warn(filter_map)]
-// #![warn(if_not_else)]
-// #![warn(items_after_statements)]
-// #![warn(nonminimal_bool)]
-// #![warn(option_map_unwrap_or)]
-// #![warn(option_map_unwrap_or_else)]
-// #![warn(option_unwrap_used)]
-// #![warn(shadow_reuse)]
-// #![warn(shadow_same)]
-// #![warn(shadow_unrelated)]
-// #![warn(single_match_else)]
-// #![warn(wrong_pub_self_convention)]
-
-#![warn(missing_docs,
-        missing_debug_implementations,
-        missing_copy_implementations,
-        trivial_casts, trivial_numeric_casts,
-        unsafe_code,
-        unstable_features,
-        unused_import_braces, unused_qualifications)]
-
 //! A multiset is a datastructure which resembles a classic Set, except it allows duplicate
 //! elements for each key. For more information on Multisets, see:
 //!
@@ -53,6 +28,43 @@
 //!     assert_eq!(capped_set.sum(), 9);
 //! }
 //! ```
+
+// Clippy Lints
+// #![warn(cast_possible_truncation)]
+// #![warn(cast_possible_wrap)]
+// #![warn(cast_precision_loss)]
+// #![warn(cast_sign_loss)]
+// #![warn(empty_enum)]
+// #![warn(enum_glob_use)]
+// #![warn(filter_map)]
+// #![warn(if_not_else)]
+// #![warn(indexing_slicing)]
+// #![warn(invalid_upcast_comparisons)]
+// #![warn(items_after_statements)]
+// #![warn(missing_docs_in_private_items)]
+// #![warn(mut_mut)]
+// #![warn(nonminimal_bool)]
+// #![warn(option_map_unwrap_or)]
+// #![warn(option_map_unwrap_or_else)]
+// #![warn(option_unwrap_used)]
+// #![warn(pub_enum_variant_names)]
+// #![warn(result_unwrap_used)]
+// #![warn(shadow_reuse)]
+// #![warn(shadow_same)]
+// #![warn(shadow_unrelated)]
+// #![warn(similar_names)]
+// #![warn(single_match_else)]
+// #![warn(stutter)]
+// #![warn(wrong_pub_self_convention)]
+
+#![warn(missing_docs,
+        missing_debug_implementations,
+        missing_copy_implementations,
+        trivial_casts, trivial_numeric_casts,
+        unsafe_code,
+        unstable_features,
+        unused_import_braces, unused_qualifications)]
+
 
 use std::ops::{BitOrAssign, BitOr, BitAnd, BitAndAssign};
 
