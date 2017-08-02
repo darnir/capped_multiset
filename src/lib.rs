@@ -3,7 +3,7 @@
 //!
 //! * [Wikipedia Entry](https://en.wikipedia.org/wiki/Multiset)
 //! * [C++ Multisets](http://en.cppreference.com/w/cpp/container/multiset)
-//! * [C++ Multiset Tutorial](http://www.java2s.com/Tutorial/Cpp/0380__set-multiset/Catalog0380__set-multiset.htm)
+//! * [Tut](http://www.java2s.com/Tutorial/Cpp/0380__set-multiset/Catalog0380__set-multiset.htm)
 //! * _Knuth, Donald. The Art of Computer Programming Volume II, Section 4.6.3, Exercise 19_
 //!
 //! This crate implements a `CappedMultiset`. A `CappedMultiset` is a datastructure similar to a
