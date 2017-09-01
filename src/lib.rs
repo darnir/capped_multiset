@@ -30,32 +30,33 @@
 //! ```
 
 // Clippy Lints
-// #![warn(cast_possible_truncation)]
-// #![warn(cast_possible_wrap)]
-// #![warn(cast_precision_loss)]
-// #![warn(cast_sign_loss)]
-// #![warn(empty_enum)]
-// #![warn(enum_glob_use)]
-// #![warn(filter_map)]
-// #![warn(if_not_else)]
-// #![warn(indexing_slicing)]
-// #![warn(invalid_upcast_comparisons)]
-// #![warn(items_after_statements)]
-// #![warn(missing_docs_in_private_items)]
-// #![warn(mut_mut)]
-// #![warn(nonminimal_bool)]
-// #![warn(option_map_unwrap_or)]
-// #![warn(option_map_unwrap_or_else)]
-// #![warn(option_unwrap_used)]
-// #![warn(pub_enum_variant_names)]
-// #![warn(result_unwrap_used)]
-// #![warn(shadow_reuse)]
-// #![warn(shadow_same)]
-// #![warn(shadow_unrelated)]
-// #![warn(similar_names)]
-// #![warn(single_match_else)]
-// #![warn(stutter)]
-// #![warn(wrong_pub_self_convention)]
+#![allow(unknown_lints)]
+#![warn(cast_possible_truncation)]
+#![warn(cast_possible_wrap)]
+#![warn(cast_precision_loss)]
+#![warn(cast_sign_loss)]
+#![warn(empty_enum)]
+#![warn(enum_glob_use)]
+#![warn(filter_map)]
+#![warn(if_not_else)]
+#![warn(indexing_slicing)]
+#![warn(invalid_upcast_comparisons)]
+#![warn(items_after_statements)]
+#![warn(missing_docs_in_private_items)]
+#![warn(mut_mut)]
+#![warn(nonminimal_bool)]
+#![warn(option_map_unwrap_or)]
+#![warn(option_map_unwrap_or_else)]
+#![warn(option_unwrap_used)]
+#![warn(pub_enum_variant_names)]
+#![warn(result_unwrap_used)]
+#![warn(shadow_reuse)]
+#![warn(shadow_same)]
+#![warn(shadow_unrelated)]
+#![warn(similar_names)]
+#![warn(single_match_else)]
+#![warn(stutter)]
+#![warn(wrong_pub_self_convention)]
 
 #![warn(missing_docs,
         missing_debug_implementations,
@@ -74,7 +75,10 @@ use std::ops::{BitOrAssign, BitOr, BitAnd, BitAndAssign};
 /// cap.
 #[derive(Hash, Debug, Eq, PartialEq, Clone)]
 pub struct CappedMultiset {
+    /// A vector containing all the elements in the multiset in their original form.
     elements: Vec<u32>,
+    /// The cap that is applied to the elements. This is an artificial cap since it does not modify
+    /// the actual value stored, but only the one displayed through various operations.
     cap: u32,
 }
 
