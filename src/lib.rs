@@ -82,6 +82,21 @@ pub struct CappedMultiset {
     cap: u32,
 }
 
+/// Convert from a slice into a CappedMultiset
+impl<'a> From<&'a [u32]> for CappedMultiset {
+    fn from(slice: &[u32]) -> Self {
+        let vec = slice.to_owned();
+        CappedMultiset::new(vec)
+    }
+}
+
+/// Convert a vector into a CappedMultiset
+impl From<Vec<u32>> for CappedMultiset {
+    fn from (vec: Vec<u32>) -> Self {
+        CappedMultiset::new(vec)
+    }
+}
+
 impl CappedMultiset {
     /// Consumes a `Vec<u32>` and returns a `CappedMultiset` with the same values.
     /// By default, no cap is set on the elements of the multiset
