@@ -107,13 +107,18 @@ impl CappedMultiset {
         }
     }
 
-    /// Compute the sum of all elements of the multiset, honoring the value of the cap.
-    pub fn sum(&self) -> u32 {
+    /// Compute the sum of all elements of the multiset, using the provided cap value
+    pub fn sum_with_cap(&self, cap: u32) -> u32 {
         let mut sum = 0;
-        for elem in self.elements.iter().map(|&x| std::cmp::min(x, self.cap)) {
+        for elem in self.elements.iter().map(|&x| std::cmp::min(x, cap)) {
             sum += elem;
         }
         sum
+    }
+
+    /// Compute the sum of all elements of the multiset, honoring the value of the cap.
+    pub fn sum(&self) -> u32 {
+        self.sum_with_cap(self.cap)
     }
 
     /// Set a cap on the values of the multiset
