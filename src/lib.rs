@@ -92,7 +92,7 @@ impl<'a> From<&'a [u32]> for CappedMultiset {
 
 /// Convert a vector into a CappedMultiset
 impl From<Vec<u32>> for CappedMultiset {
-    fn from (vec: Vec<u32>) -> Self {
+    fn from(vec: Vec<u32>) -> Self {
         CappedMultiset::new(vec)
     }
 }
