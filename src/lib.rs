@@ -68,6 +68,7 @@
 use std::collections::BTreeMap;
 use std::collections::btree_map::Entry;
 
+use std::ops::{BitOr, BitAnd, BitOrAssign, BitAndAssign};
 
 /// A `CappedMultiset` structure is a data structure similar to a multiset with the key distinction
 /// that it supports setting a _cap_ on the values of each element. Once a cap is set, all
@@ -167,6 +168,11 @@ where
         self.cap = cap;
     }
 
+    /// Get the cap for the multiset elements
+    pub fn get_cap(&self) -> Option<usize> {
+        self.cap
+    }
+
     /// Return the number of times Element occurs in Multiset.
     /// This method honors the current value of the `cap` and hence has an
     /// upper bound of the current value of `cap`.
@@ -196,5 +202,166 @@ where
             None => value,
             Some(c) => std::cmp::min(value, c),
         }
+    }
+}
+
+impl<U> BitOrAssign for CappedMultiset<U> where U: Ord + Copy {
+    /// Returns the in-place union of `self` and `rhs`
+    /// It will honor the value of the `cap` placed on the `rhs` while
+    /// computing the union
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset1: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    /// let mut mset2: CappedMultiset<u32> = CappedMultiset::new(Some(3));
+    ///
+    /// mset1.insert_multiple(1, 10);
+    /// mset1.insert_multiple(2, 10);
+    /// mset2.insert_multiple(1, 3);
+    /// mset2.insert_multiple(3, 5);
+    ///
+    /// mset1 |= mset2;
+    ///
+    /// assert_eq!(5, mset1.count_of(1));
+    /// assert_eq!(5, mset1.count_of(2));
+    /// assert_eq!(3, mset1.count_of(3));
+    ///
+    /// mset1.set_cap(None);
+    /// // Since cap was 5 when the union was performed, all values are capped to 5
+    /// assert_eq!(5, mset1.count_of(1));
+    /// ```
+    fn bitor_assign(&mut self, rhs: CappedMultiset<U>) {
+        for k1 in rhs.elements.keys() {
+            let rhsval = rhs.count_of(*k1);
+            let selfval = self.count_of(*k1);
+            self.elements.insert(*k1, std::cmp::max(rhsval, selfval));
+        }
+    }
+}
+
+impl<U> BitOr for CappedMultiset<U> where U: Ord + Copy {
+    type Output = Self;
+
+    /// Returns the union of `self` and `rhs`
+    /// It will honor the value of the `cap` placed on both `self` and `rhs`
+    /// while computing the union.
+    ///
+    /// The newly returned `CappedMultiset` will have no `cap` set by default
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset1: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    /// let mut mset2: CappedMultiset<u32> = CappedMultiset::new(Some(3));
+    ///
+    /// mset1.insert_multiple(1, 10);
+    /// mset1.insert_multiple(2, 10);
+    /// mset2.insert_multiple(1, 3);
+    /// mset2.insert_multiple(3, 5);
+    ///
+    /// let mut mset3 = mset1 | mset2;
+    ///
+    /// assert_eq!(5, mset3.count_of(1));
+    /// assert_eq!(5, mset3.count_of(2));
+    /// assert_eq!(3, mset3.count_of(3));
+    ///
+    /// mset3.set_cap(Some(7));
+    /// assert_eq!(5, mset3.count_of(1));
+    /// ```
+    fn bitor(self, rhs: Self) -> Self {
+        let mut new = self.clone();
+        match new.get_cap() {
+            Some(cap) => {
+                for val in new.elements.values_mut() {
+                    *val = std::cmp::min(*val, cap);
+                }
+            },
+            None => {},
+        }
+
+        new |= rhs;
+        new.set_cap(None);
+        new
+    }
+}
+
+impl<U> BitAndAssign for CappedMultiset<U> where U: Ord + Copy {
+    /// Returns the in-place intersection of `self` and `rhs`
+    /// It will honor the value of the `cap` placed on the `rhs` while
+    /// computing the intersection
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset1: CappedMultiset<u32> = CappedMultiset::new(None);
+    /// let mut mset2: CappedMultiset<u32> = CappedMultiset::new(Some(3));
+    ///
+    /// mset1.insert_multiple(1, 5);
+    /// mset1.insert_multiple(2, 5);
+    /// mset2.insert_multiple(1, 3);
+    /// mset2.insert_multiple(3, 5);
+    ///
+    /// mset1 &= mset2;
+    ///
+    /// assert_eq!(3, mset1.count_of(1));
+    /// assert_eq!(0, mset1.count_of(2));
+    /// assert_eq!(0, mset1.count_of(3));
+    /// ```
+    fn bitand_assign(&mut self, rhs: CappedMultiset<U>) {
+        for (k1, v1) in self.elements.iter_mut() {
+            let rhsval = rhs.count_of(*k1);
+            *v1 = std::cmp::min(rhsval, *v1);
+        }
+    }
+}
+
+impl<U> BitAnd for CappedMultiset<U> where U: Ord + Copy {
+    type Output = Self;
+
+    /// Returns the intersection of `self` and `rhs`
+    /// It will honor the value of the `cap` placed on both `self` and `rhs`
+    /// while computing the intersection.
+    ///
+    /// The newly returned `CappedMultiset` will have no `cap` set by default
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset1: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    /// let mut mset2: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    ///
+    /// mset1.insert_multiple(1, 10);
+    /// mset1.insert_multiple(2, 10);
+    /// mset2.insert_multiple(1, 5);
+    /// mset2.insert_multiple(3, 5);
+    ///
+    /// let mut mset3 = mset1 & mset2;
+    ///
+    /// assert_eq!(5, mset3.count_of(1));
+    /// assert_eq!(0, mset3.count_of(2));
+    /// assert_eq!(0, mset3.count_of(3));
+    ///
+    /// mset3.set_cap(Some(3));
+    /// assert_eq!(3, mset3.count_of(1));
+    /// ```
+    fn bitand(self, rhs: Self) -> Self {
+        let mut new = self.clone();
+        match new.get_cap() {
+            Some(cap) => {
+                for val in new.elements.values_mut() {
+                    *val = std::cmp::min(*val, cap);
+                }
+            },
+            None => {},
+        }
+
+        new &= rhs;
+        new.set_cap(None);
+        new
     }
 }
