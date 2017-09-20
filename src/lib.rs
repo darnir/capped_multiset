@@ -20,7 +20,7 @@
 //!
 //! fn main() {
 //!     let set = vec![1, 2, 3, 4, 5];
-//!     let mut capped_set = CappedMultiset::new(set);
+//!     let mut capped_set = CappedMultiset::new(None);
 //!     assert_eq!(capped_set.sum(), 15);
 //!     capped_set.set_cap(Some(1));
 //!     assert_eq!(capped_set.sum(), 5);
@@ -47,7 +47,6 @@
 #![warn(nonminimal_bool)]
 #![warn(option_map_unwrap_or)]
 #![warn(option_map_unwrap_or_else)]
-#![warn(option_unwrap_used)]
 #![warn(pub_enum_variant_names)]
 #![warn(result_unwrap_used)]
 #![warn(shadow_reuse)]
@@ -66,157 +65,136 @@
         unstable_features,
         unused_import_braces, unused_qualifications)]
 
+use std::collections::BTreeMap;
+use std::collections::btree_map::Entry;
 
-use std::ops::{BitOrAssign, BitOr, BitAnd, BitAndAssign};
 
 /// A `CappedMultiset` structure is a data structure similar to a multiset with the key distinction
 /// that it supports setting a _cap_ on the values of each element. Once a cap is set, all
 /// operations on the data structure that access an element will return at most the value of the
 /// cap.
-#[derive(Hash, Debug, Eq, PartialEq, Clone)]
-pub struct CappedMultiset {
+#[derive(Hash, Debug, Clone)]
+pub struct CappedMultiset<U> {
     /// A vector containing all the elements in the multiset in their original form.
-    elements: Vec<u32>,
+    elements: BTreeMap<U, usize>,
     /// The cap that is applied to the elements. This is an artificial cap since it does not modify
     /// the actual value stored, but only the one displayed through various operations.
-    cap: u32,
+    cap: Option<usize>,
 }
 
-/// Convert from a slice into a CappedMultiset
-impl<'a> From<&'a [u32]> for CappedMultiset {
-    fn from(slice: &[u32]) -> Self {
-        let vec = slice.to_owned();
-        CappedMultiset::new(vec)
-    }
-}
-
-/// Convert a vector into a CappedMultiset
-impl From<Vec<u32>> for CappedMultiset {
-    fn from(vec: Vec<u32>) -> Self {
-        CappedMultiset::new(vec)
-    }
-}
-
-impl CappedMultiset {
-    /// Consumes a `Vec<u32>` and returns a `CappedMultiset` with the same values.
-    /// By default, no cap is set on the elements of the multiset
-    pub fn new(item: Vec<u32>) -> CappedMultiset {
+impl<U> CappedMultiset<U>
+where
+    U: Ord,
+{
+    /// Creates a new `CappedMultiset` along with a cap. Pass `None` as the
+    /// value to prevent any caps from being set.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mset: CappedMultiset<u32> = CappedMultiset::new(None);
+    /// ```
+    pub fn new(cap: Option<usize>) -> Self {
         CappedMultiset {
-            elements: item,
-            cap: u32::max_value(),
+            elements: BTreeMap::new(),
+            cap: cap,
         }
     }
 
-    /// Compute the sum of all elements of the multiset, using the provided cap value
-    pub fn sum_with_cap(&self, cap: u32) -> u32 {
-        let mut sum = 0;
-        for elem in self.elements.iter().map(|&x| std::cmp::min(x, cap)) {
-            sum += elem;
-        }
-        sum
-    }
-
-    /// Compute the sum of all elements of the multiset, honoring the value of the cap.
-    pub fn sum(&self) -> u32 {
-        self.sum_with_cap(self.cap)
-    }
-
-    /// Set a cap on the values of the multiset
-    pub fn set_cap(&mut self, cap: Option<u32>) {
-        self.cap = cap.unwrap_or(u32::max_value());
-    }
-}
-
-impl BitAndAssign for CappedMultiset {
-    /// In-place intersection of the `CappedMultiset` and `_rhs`
+    /// Inserts an element into the Multiset.
+    /// This operation always succeeds irrespective of the current value of the
+    /// `cap`.
     ///
-    /// Compares LHS and RHS element-wise and stores the minimum for each element in LHS
-    fn bitand_assign(&mut self, _rhs: CappedMultiset) {
-        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
-            *e1 = std::cmp::min(*e1, *e2);
-        }
-    }
-}
-
-impl<'a> BitAndAssign<&'a CappedMultiset> for CappedMultiset {
-    /// In-place intersection of the `CappedMultiset` and a reference to `_rhs`
-    fn bitand_assign(&mut self, _rhs: &'a CappedMultiset) {
-        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
-            *e1 = std::cmp::min(*e1, *e2);
-        }
-    }
-}
-
-impl BitAnd for CappedMultiset {
-    type Output = Self;
-
-    /// Returns the intersection of self and rhs as a new CappedMultiset.
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
     ///
-    /// Compares LHS and RHS element-wise and returns a new `CappedMultiset` containing the minimum
-    /// for each element
-    fn bitand(self, rhs: Self) -> Self {
-        let mut result = CappedMultiset::new(self.elements);
-        result &= rhs;
-        result
+    /// let mut mset: CappedMultiset<u32> = CappedMultiset::new(None);
+    /// mset.insert(5);
+    /// assert_eq!(1, mset.count_of(5));
+    /// ```
+    pub fn insert(&mut self, val: U) {
+        self.insert_multiple(val, 1);
     }
-}
 
-impl BitOrAssign for CappedMultiset {
-    /// In-place union of the `CappedMultiset` and `_rhs`
-    fn bitor_assign(&mut self, _rhs: CappedMultiset) {
-        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
-            *e1 = std::cmp::max(*e1, *e2);
+    /// Inserts an element (`E`) multiple (`n`) times into the Multiset
+    /// This operation will always succeed and add the element to the Multiset
+    /// irrespective of the current value of the `cap`.
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    /// mset.insert_multiple(3, 2);
+    /// mset.insert_multiple(4, 8);
+    /// assert_eq!(2, mset.count_of(3));
+    /// assert_eq!(5, mset.count_of(4));
+    /// ```
+    pub fn insert_multiple(&mut self, elem: U, n: usize) {
+        match self.elements.entry(elem) {
+            Entry::Vacant(view) => {
+                view.insert(n);
+            }
+            Entry::Occupied(mut view) => {
+                *(view.get_mut()) += n;
+            }
+        };
+    }
+
+    /// Set the cap for the Multiset elements.
+    ///
+    /// This is *not* a lossy operation. Setting a lower cap will not modify
+    /// the data in the Multiset at all. Hence, setting the cap is a cheap O(1)
+    /// operation. All future operations will however honor the new value of
+    /// the cap
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset: CappedMultiset<u32> = CappedMultiset::new(None);
+    /// mset.insert_multiple(0, 10);
+    /// assert_eq!(10, mset.count_of(0));
+    /// mset.set_cap(Some(5));
+    /// assert_eq!(5, mset.count_of(0));
+    /// mset.set_cap(Some(15));
+    /// assert_eq!(10, mset.count_of(0));
+    /// ```
+    pub fn set_cap(&mut self, cap: Option<usize>) {
+        self.cap = cap;
+    }
+
+    /// Return the number of times Element occurs in Multiset.
+    /// This method honors the current value of the `cap` and hence has an
+    /// upper bound of the current value of `cap`.
+    ///
+    /// # Example
+    /// ```
+    /// use capped_multiset::CappedMultiset;
+    ///
+    /// let mut mset: CappedMultiset<u32> = CappedMultiset::new(Some(5));
+    /// mset.insert_multiple(0, 7);
+    /// mset.insert_multiple(1, 4);
+    /// mset.insert(0);
+    /// assert_eq!(5, mset.count_of(0));
+    /// assert_eq!(4, mset.count_of(1));
+    /// mset.set_cap(None);
+    /// assert_eq!(8, mset.count_of(0));
+    /// ```
+    pub fn count_of(&self, elem: U) -> usize {
+        let count = self.elements.get(&elem).map_or(0, |x| *x);
+        self.capped_val(count)
+    }
+
+    /// Return a value after honoring the current `cap`
+    #[inline]
+    fn capped_val(&self, value: usize) -> usize {
+        match self.cap {
+            None => value,
+            Some(c) => std::cmp::min(value, c),
         }
-    }
-}
-
-impl<'a> BitOrAssign<&'a CappedMultiset> for CappedMultiset {
-    fn bitor_assign(&mut self, _rhs: &'a CappedMultiset) {
-        for (e1, e2) in self.elements.iter_mut().zip(_rhs.elements.iter()) {
-            *e1 = std::cmp::max(*e1, *e2);
-        }
-    }
-}
-
-impl BitOr for CappedMultiset {
-    type Output = Self;
-
-    /// Returns the union of self and rhs as a new CappedMultiset.
-    fn bitor(self, rhs: Self) -> Self {
-        let mut result = CappedMultiset::new(self.elements);
-        result |= rhs;
-        result
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use CappedMultiset;
-    #[test]
-    fn test_sum() {
-        let simple_array: Vec<u32> = vec![1, 2, 3, 4, 5];
-        let mut testset = CappedMultiset::new(simple_array);
-        assert_eq!(testset.sum(), 15);
-        testset.set_cap(Some(3));
-        assert_eq!(testset.sum(), 12);
-        testset.set_cap(None);
-        assert_eq!(testset.sum(), 15);
-        testset.set_cap(Some(1));
-        assert_eq!(testset.sum(), 5);
-        testset.set_cap(Some(0));
-        assert_eq!(testset.sum(), 0);
-    }
-
-    #[test]
-    fn test_operations() {
-        let set1_vec: Vec<u32> = vec![2, 4, 6, 8, 10];
-        let set2_vec: Vec<u32> = vec![2, 3, 4, 10, 12];
-        let testset1 = CappedMultiset::new(set1_vec);
-        let testset2 = CappedMultiset::new(set2_vec);
-        let testset3 = testset1.clone() | testset2.clone();
-        let testset4 = testset1.clone() & testset2.clone();
-        assert_eq!(testset3.sum(), 34);
-        assert_eq!(testset4.sum(), 27);
     }
 }
