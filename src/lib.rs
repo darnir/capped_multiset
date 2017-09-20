@@ -205,7 +205,10 @@ where
     }
 }
 
-impl<U> BitOrAssign for CappedMultiset<U> where U: Ord + Copy {
+impl<U> BitOrAssign for CappedMultiset<U>
+where
+    U: Ord + Copy,
+{
     /// Returns the in-place union of `self` and `rhs`
     /// It will honor the value of the `cap` placed on the `rhs` while
     /// computing the union
@@ -241,7 +244,10 @@ impl<U> BitOrAssign for CappedMultiset<U> where U: Ord + Copy {
     }
 }
 
-impl<U> BitOr for CappedMultiset<U> where U: Ord + Copy {
+impl<U> BitOr for CappedMultiset<U>
+where
+    U: Ord + Copy,
+{
     type Output = Self;
 
     /// Returns the union of `self` and `rhs`
@@ -285,7 +291,10 @@ impl<U> BitOr for CappedMultiset<U> where U: Ord + Copy {
     }
 }
 
-impl<U> BitAndAssign for CappedMultiset<U> where U: Ord + Copy {
+impl<U> BitAndAssign for CappedMultiset<U>
+where
+    U: Ord + Copy,
+{
     /// Returns the in-place intersection of `self` and `rhs`
     /// It will honor the value of the `cap` placed on the `rhs` while
     /// computing the intersection
@@ -317,7 +326,10 @@ impl<U> BitAndAssign for CappedMultiset<U> where U: Ord + Copy {
     }
 }
 
-impl<U> BitAnd for CappedMultiset<U> where U: Ord + Copy {
+impl<U> BitAnd for CappedMultiset<U>
+where
+    U: Ord + Copy,
+{
     type Output = Self;
 
     /// Returns the intersection of `self` and `rhs`
