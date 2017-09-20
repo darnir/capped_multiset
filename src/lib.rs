@@ -273,13 +273,10 @@ impl<U> BitOr for CappedMultiset<U> where U: Ord + Copy {
     /// ```
     fn bitor(self, rhs: Self) -> Self {
         let mut new = self.clone();
-        match new.get_cap() {
-            Some(cap) => {
-                for val in new.elements.values_mut() {
-                    *val = std::cmp::min(*val, cap);
-                }
-            },
-            None => {},
+        if let Some(cap) = new.get_cap() {
+            for val in new.elements.values_mut() {
+                *val = std::cmp::min(*val, cap);
+            }
         }
 
         new |= rhs;
@@ -312,7 +309,8 @@ impl<U> BitAndAssign for CappedMultiset<U> where U: Ord + Copy {
     /// assert_eq!(0, mset1.count_of(3));
     /// ```
     fn bitand_assign(&mut self, rhs: CappedMultiset<U>) {
-        for (k1, v1) in self.elements.iter_mut() {
+
+        for (k1, v1) in &mut self.elements {
             let rhsval = rhs.count_of(*k1);
             *v1 = std::cmp::min(rhsval, *v1);
         }
@@ -351,13 +349,10 @@ impl<U> BitAnd for CappedMultiset<U> where U: Ord + Copy {
     /// ```
     fn bitand(self, rhs: Self) -> Self {
         let mut new = self.clone();
-        match new.get_cap() {
-            Some(cap) => {
-                for val in new.elements.values_mut() {
-                    *val = std::cmp::min(*val, cap);
-                }
-            },
-            None => {},
+        if let Some(cap) = new.get_cap() {
+            for val in new.elements.values_mut() {
+                *val = std::cmp::min(*val, cap);
+            }
         }
 
         new &= rhs;
